@@ -3,6 +3,15 @@ import re
 import glob
 import logging
 import os
+import inspect
+import torch
+
+
+def torch_load(path, map_location=None):
+    # model files are whole pickled modules, so torch>=2.6 needs weights_only=False
+    if 'weights_only' in inspect.signature(torch.load).parameters:
+        return torch.load(path, map_location=map_location, weights_only=False)
+    return torch.load(path, map_location=map_location)
 
 def increment_path(path, exist_ok=False, sep='', mkdir=True):
     """

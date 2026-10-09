@@ -22,7 +22,7 @@ from utils.loss import AdversarialLoss
 import scipy.io  
 from matplotlib import pyplot as plt
 # import pdb
-from utils.general import (LOGGER, increment_path, check_suffix)
+from utils.general import (LOGGER, increment_path, check_suffix, torch_load)
 from depth_estimate.model.pytorch_DIW_scratch import pytorch_DIW_scratch
 import pathlib
 from pathlib import Path
@@ -46,12 +46,12 @@ class cyclegan:
 
         # check_suffix(opt.weights_A, '.pt')  # check weights
         # pretrained = str(opt.weights_A).endswith('.pt')
-        pretrained = path.exists(opt.weights_A)
+        pretrained = opt.weights_A is not None and path.exists(opt.weights_A)
         if pretrained:
-            self.model_t = torch.load(opt.weights_t, map_location=self.device)
-            self.model_b = torch.load(opt.weights_b, map_location=self.device)
-            self.model_A = torch.load(opt.weights_A, map_location=self.device)
-            self.model_d = torch.load(opt.weights_d, map_location=self.device)
+            self.model_t = torch_load(opt.weights_t, map_location=self.device)
+            self.model_b = torch_load(opt.weights_b, map_location=self.device)
+            self.model_A = torch_load(opt.weights_A, map_location=self.device)
+            self.model_d = torch_load(opt.weights_d, map_location=self.device)
 
         else:
             self.model_t = TransNet(32, init_weights=False, use_pretrained=False).to(self.device)
@@ -65,7 +65,7 @@ class cyclegan:
         
         self.depth = pytorch_DIW_scratch
         self.depth = torch.nn.parallel.DataParallel(self.depth, device_ids=[0])
-        model_parameters = torch.load('./depth_estimate/checkpoints/test_local/best_generalization_net_G.pth')
+        model_parameters = torch_load('./depth_estimate/checkpoints/test_local/best_generalization_net_G.pth', map_location=self.device)
         self.depth.load_state_dict(model_parameters)
         self.depth.eval()
         
@@ -419,8 +419,8 @@ def parse_opt(known=False):
     parser.add_argument('--strat_epoch', type=int, default=0)
     parser.add_argument('--clean-dir', default='./dataset/air_image', help='dir of dataset')
     parser.add_argument('--depth-dir', default='./dataset/air_depth', help='dir of dataset')
-    parser.add_argument('--underwater-dir', default='./uw-cyclegan/dataset/underwater_img', help='dir of dataset')
-    parser.add_argument('--underwater-dir-refer', default='./uw-cyclegan/dataset/underwater_refer', help='dir of dataset')
+    parser.add_argument('--underwater-dir', default='./dataset/underwater_img', help='dir of dataset')
+    parser.add_argument('--underwater-dir-refer', default='./dataset/underwater_refer', help='dir of dataset')
     parser.add_argument('--batch-size', type=int, default=2, help='total batch size for all GPUs, -1 for auto-batch')
     parser.add_argument('--weights_c2u', type=str, default=ROOT / 'pretrained_model', help='initial weights path')
     
@@ -436,7 +436,7 @@ def parse_opt(known=False):
     parser.add_argument('--D2G_LR', default='0.1', help='discriminator/generator learning rate ratio')
     parser.add_argument('--img_size', '--img', '--img-size', type=int, default=256, help='size (pixels) of train, val image')
     parser.add_argument('--device', default='gpu', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
-    parser.add_argument('--GPU', type=list, default=[1], help='cuda device, i.e. 0 or 0,1,2,3')
+    parser.add_argument('--GPU', type=list, default=[0], help='cuda device, i.e. 0 or 0,1,2,3')
     parser.add_argument('--project', default=ROOT / 'runs/train', help='save to project/name')
     parser.add_argument('--name', default='exp1', help='save to project/name')
     opt = parser.parse_known_args()[0] if known else parser.parse_args()

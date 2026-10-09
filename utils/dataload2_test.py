@@ -12,6 +12,7 @@ from PIL import Image, ImageFile
 from matplotlib import pyplot as plt
 from pathlib import Path
 from depth_estimate.model.pytorch_DIW_scratch import pytorch_DIW_scratch
+from utils.general import torch_load
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 IMG_FORMATS = ['bmp', 'jpg', 'jpeg', 'png', 'tif', 'tiff', 'dng', 'webp', 'mpo']  # acceptable image suffixes
 VID_FORMATS = ['mov', 'avi', 'mp4', 'mpg', 'mpeg', 'm4v', 'wmv', 'mkv']  # acceptable video suffixes
@@ -44,8 +45,9 @@ class Dataset(torch.utils.data.Dataset):
 
         self.depth = pytorch_DIW_scratch
         self.depth = torch.nn.parallel.DataParallel(self.depth, device_ids=[0])
-        model_parameters = torch.load('./depth_estimate/checkpoints/test_local/best_generalization_net_G.pth')
+        model_parameters = torch_load('./depth_estimate/checkpoints/test_local/best_generalization_net_G.pth', map_location=device)
         self.depth.load_state_dict(model_parameters)
+        self.depth.to(device)
 
 
     def __len__(self):
@@ -68,7 +70,7 @@ class Dataset(torch.utils.data.Dataset):
         #   clean_index = int(np.random.random() * len(self.clean_data))
         clean = cv2.imread(self.clean_data[index])
         under = cv2.imread(self.under_data[index])
-        under_refer = cv2.imread(self.under_refer[index])
+        under_refer = cv2.imread(self.under_refer[index]) if os.path.exists(self.under_refer[index]) else under
             #if min(clean.shape[0:2])>=self.input_size:
             #    break
         # while(True):

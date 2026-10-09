@@ -1,3 +1,4 @@
+import os
 import torch
 import torch.nn as nn
 
@@ -54,16 +55,24 @@ def _make_scratch(in_shape, out_shape, groups=1, expand=False):
     return scratch
 
 
+EFFNET_HUB_DIR = "/home/YanHR/.cache/torch/hub/rwightman_gen-efficientnet-pytorch_master"
+
+
 def _make_pretrained_efficientnet_lite3(use_pretrained, exportable=False):
 
-    efficientnet = torch.hub.load(
-        "/home/YanHR/.cache/torch/hub/rwightman_gen-efficientnet-pytorch_master",
-        # '/data1/ALLData/yhr/cycle/pre_trained/rwightman_gen-efficientnet-pytorch_master'
-        "tf_efficientnet_lite3",
-        pretrained=use_pretrained,
-        exportable=exportable,
-        source='local'
-    )
+    if os.path.isdir(EFFNET_HUB_DIR):
+        efficientnet = torch.hub.load(
+            EFFNET_HUB_DIR,
+            # '/data1/ALLData/yhr/cycle/pre_trained/rwightman_gen-efficientnet-pytorch_master'
+            "tf_efficientnet_lite3",
+            pretrained=use_pretrained,
+            exportable=exportable,
+            source='local'
+        )
+    else:
+        # e.g. on Colab: pip install git+https://github.com/rwightman/gen-efficientnet-pytorch
+        import geffnet
+        efficientnet = geffnet.tf_efficientnet_lite3(pretrained=use_pretrained, exportable=exportable)
     return _make_efficientnet_backbone(efficientnet)
 
 

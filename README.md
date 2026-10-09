@@ -6,6 +6,9 @@ Haorui Yan , Zhenwei Zhang , and Yuping Duan* ,IEEE Transactions on Circuits and
 ## Overview
 ![avatar](network.PNG)
 
+## Run on Google Colab
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/nantapongpa-a11y/UW-CycleGAN/blob/UW-Colab/UW_CycleGAN_Colab.ipynb)
+
 ## Prerequisites
 - PyTorch 1.11.0
 - Python 3.7

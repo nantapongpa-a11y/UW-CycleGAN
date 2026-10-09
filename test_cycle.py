@@ -8,6 +8,7 @@ from matplotlib import pyplot as plt
 from utils.networks2 import Discriminator, BetaTrans, HazeProduceNet, DepthEstimationNet, Lightnet
 # from utils.networks5 import BetaNet, Transnet,Lightnet,Depthnet, Cleannet,HazeProduceNet,BasicBlock, BottleNeck
 from utils.dataload2_test import Dataset
+from utils.general import torch_load
 import pathlib
 from pathlib import Path
 FILE = Path(__file__).resolve()
@@ -28,10 +29,10 @@ class cyclegan:
     def test_model(self):
 
         self.model_c2u = HazeProduceNet(base_channel_nums=48).to(self.device)
-        self.model_t = torch.load(opt.weights_t)
-        self.model_b = torch.load(opt.weights_b)
-        self.model_A = torch.load(opt.weights_A)
-        self.model_d = torch.load(opt.weights_d)
+        self.model_t = torch_load(opt.weights_t, map_location=self.device)
+        self.model_b = torch_load(opt.weights_b, map_location=self.device)
+        self.model_A = torch_load(opt.weights_A, map_location=self.device)
+        self.model_d = torch_load(opt.weights_d, map_location=self.device)
         #self.model_tb =BetaTrans(32,init_weights=False, use_pretrained=False).to(self.device)
         #self.model_A = Lightnet(32, init_weights=False, use_pretrained=False).to(self.device)
         #self.model_d = DepthEstimationNet(32, init_weights=False, use_pretrained=False).to(self.device)
@@ -206,16 +207,16 @@ def parse_opt(known=False):
     parser.add_argument('--weights-b', default='./model/model_b.pt', help='dir of dataset')
     parser.add_argument('--weights-A', default='./model/model_A.pt', help='dir of dataset')
     parser.add_argument('--weights-d', default='./model/model_d.pt', help='dir of dataset')
-    parser.add_argument('--clean-dir', default='uw-cyclegan/test_img/data1/img', help='dir of dataset')
-    parser.add_argument('--depth-dir', default='uw-cyclegan/test_img/data1/img', help='dir of dataset')
-    parser.add_argument('--underwater-dir', default='uw-cyclegan/test_img/data1/img', help='dir of dataset')
-    parser.add_argument('--underwater-dir-refer', default='uw-cyclegan/test_img/data1/refer', help='dir of dataset')
+    parser.add_argument('--clean-dir', default='./test_img/data1/img', help='dir of dataset')
+    parser.add_argument('--depth-dir', default='./test_img/data1/img', help='dir of dataset')
+    parser.add_argument('--underwater-dir', default='./test_img/data1/img', help='dir of dataset')
+    parser.add_argument('--underwater-dir-refer', default='./test_img/data1/refer', help='dir of dataset')
     parser.add_argument('--batch-size', type=int, default=1, help='total batch size for all GPUs, -1 for auto-batch')
     parser.add_argument('--PSNR', default='RGB', help='psnr')
     parser.add_argument('--img_size', '--img', '--img-size', type=int, default=256,
                         help='size (pixels) of train, val image')
     parser.add_argument('--device', default='gpu', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
-    parser.add_argument('--GPU', type=list, default=[1], help='cuda device, i.e. 0 or 0,1,2,3')
+    parser.add_argument('--GPU', type=list, default=[0], help='cuda device, i.e. 0 or 0,1,2,3')
     parser.add_argument('--project', default=ROOT / 'test_result', help='save to project/name')
     parser.add_argument('--name', default='test01', help='save to project/name')
     opt = parser.parse_known_args()[0] if known else parser.parse_args()
